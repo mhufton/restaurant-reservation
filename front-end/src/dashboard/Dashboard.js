@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { listReservations } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
 
+import formatReservationDate from "../utils/format-reservation-date";
+import formatReservationTime from "../utils/format-reservation-time";
+
 /**
  * Defines the dashboard page.
  * @param date
@@ -20,8 +23,21 @@ function Dashboard({ date }) {
     setReservationsError(null);
     listReservations({ date }, abortController.signal)
       .then(setReservations)
-      // .catch(setReservationsError);
+      .catch(setReservationsError);
     return () => abortController.abort();
+  }
+
+  const mapReservations = () => {
+    const newReservations = reservations.sort((a, b) => a.reservation_time - b.reservation_time);
+    return newReservations.map((res, index) => {
+      return (
+        <div>
+          <p className="resName">{res.first_name} {res.last_name}</p>
+          <p className="resDate">{res.reservation_date} at {res.reservation_time}</p>
+          <p className="resMobile">{res.mobile_number}</p>
+        </div>
+      )
+    })
   }
 
   return (
@@ -31,7 +47,8 @@ function Dashboard({ date }) {
         <h4 className="mb-0">Reservations for date</h4>
       </div>
       <ErrorAlert error={reservationsError} />
-      {reservations.length === 0 ? <p>There are no reservations for today</p> : JSON.stringify(reservations)}
+      {mapReservations()}
+      {/* {reservations.length === 0 ? <p>There are no reservations for today</p> : JSON.stringify(reservations)} */}
       <div>
         <label>
           Choose Date:

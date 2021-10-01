@@ -1,5 +1,3 @@
-const Knex = require("knex");
-const { KnexTimeoutError } = require("knex");
 const knex = require("../db/connection");
 
 function list() {
@@ -14,9 +12,9 @@ function create(reservation) {
 }
 
 function read(reservationId) {
-  const newNum = Number(reservationId);
-  let query = await knex("reservations").select("*").where({ reservation_id: reservationId });
-  return query;
+  return knex("reservations")
+  .select("*")
+  .where({ reservation_id: reservationId })
 }
 
 function update(updatedReservation) {
@@ -31,8 +29,15 @@ function destroy(reservationId) {
   return knex("reservations").where({ reservation_id: reservationId }).del();
 }
 
+function listReservationsByDate(reservation_date) {
+  return knex("reservations")
+    .select("*")
+    .where({ reservation_date })
+}
+
 module.exports = {
   list,
+  listReservationsByDate,
   create,
   read,
   update,

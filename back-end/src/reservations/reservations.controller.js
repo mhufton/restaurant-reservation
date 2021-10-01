@@ -14,8 +14,23 @@ async function reservationExists(req, res, next) {
   })
 }
 
+async function hasProps(req, res, next) {
+  const {
+    firstName,
+    lastName,
+    mobile_number,
+    reservation_date,
+    reservation_time,
+    peopleInParty,
+  } = req.body.data;
+}
+
 async function list(req, res) {
   res.json({ data: await service.list() })
+}
+
+async function listByDate(req, res, next) {
+  res.json({ data: await service(listReservationsByDate) })
 }
 
 async function read(req, res, next) {
@@ -28,6 +43,7 @@ async function read(req, res, next) {
 
 async function create(req, res, next) {
   const data = await service.create(req.body.data);
+  console.log("creating")
   res.status(201).json({ data })
 }
 
@@ -48,8 +64,8 @@ async function destroy(req, res) {
 
 module.exports = {
   list: asyncErrorBoundary(list),
-  create: asyncErrorBoundary(create),
+  create: [hasProps, asyncErrorBoundary(create)],
   read: [asyncErrorBoundary(reservationExists), asyncErrorBoundary(read)],
-  update: [asyncErrorBoundary(reservationExists), asyncErrorBoundary(update)],
+  update: [hasProps, asyncErrorBoundary(reservationExists), asyncErrorBoundary(update)],
   delete: [asyncErrorBoundary(reservationExists), asyncErrorBoundary(destroy)],
 };

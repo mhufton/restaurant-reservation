@@ -3,33 +3,35 @@ import { useHistory } from 'react-router-dom'
 import { createReservation } from "../utils/api";
 
 import ErrorAlert from './ErrorAlert';
+import { ValidateReservation } from './Validators';
 
 export default function NewReservation() {
   const history = useHistory();
   const initialFormState = {
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     mobile_number: "",
-    date: "",
-    time: "",
+    reservation_date: "",
+    reservation_time: "",
     peopleInParty: "",
   }
 
   const [errors, setErrors] = useState([]);
-  const [formData, setFormData] = useState({ ...initialFormState });
+  const [formData, setFormData] = useState(initialFormState);
 
   const handleChange = ({ target }) => {
     setFormData({
       ...formData,
       [target.name]: target.value,
     })
-    console.log("form data changed")
+    // console.log("form data changed")
+    // console.log(formData.reservation_date, formData.reservation_time)
   }
 
-  const validateReservation = () => {
+  const ValidateReservation = () => {
     const today = new Date();
-    const resDate = new Date(formData.date);
-    const resTime = formData.time;
+    const resDate = new Date(formData.reservation_date);
+    const resTime = formData.reservation_time;
     const errorArray = [];
   
     if (resDate.getDay() === 2) {
@@ -50,16 +52,30 @@ export default function NewReservation() {
       return false
     }
     return true
-  }
+  };
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   if (ValidateReservation()) {
+  //     createReservation(formData)
+  //       .then((output) => 
+  //         history.push(`/dashboard?date=${formData.reservation_date}`))
+  //       .catch(errors);
+  //   }
+  // }
+
+  const handleSubmit = async(e) => {
+    console.log("submitting...")
     e.preventDefault();
-    if (validateReservation()) {
-      createReservation(formData)
-        .then((output) => 
-          history.push(`/dashboard?date=${formData.date}`))
-        .catch(errors);
+    const url = `http://localhost:5000/reservations`;
+    const options = {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ data: formData }),
     }
+    const result = await fetch(url, options);
+    console.log("result", result)
+  //  return await fetchJson(url, options)
   }
 
   const callErrors = () => {
@@ -71,18 +87,18 @@ export default function NewReservation() {
   return (
     <div>
       <h1>New Reservations</h1>
-      <form onSubmit={handleSubmit} method="POST">
-        {callErrors()}
+      <form onSubmit={handleSubmit}>
+        {errors.length > 0 ? callErrors() : null}
         <label>
           First Name:
           <input 
             type="text"
-            id='firstName'
-            name="firstName"
+            id='first_name'
+            name="first_name"
             required={true}
             placeholder='enter first name'
             onChange={handleChange}
-            value={formData.firstName}
+            value={formData.first_name}
             />
         </label>
         <br />
@@ -90,12 +106,12 @@ export default function NewReservation() {
           Last Name:
           <input 
             type='text'
-            id="lastName"
-            name="lastName"
+            id="last_name"
+            name="last_name"
             required={true}
             placeholder='enter last name'
             onChange={handleChange}
-            value={formData.lastName}
+            value={formData.last_name}
             />
         </label>
         <br />
@@ -115,24 +131,24 @@ export default function NewReservation() {
         <label>
           Reservation Date:
           <input 
-            type='date'
+            type="date"
             id="date"
-            name='date'
+            name="reservation_date"
             required={true}
             onChange={handleChange}
-            value={formData.date}
+            value={formData.reservation_date}
             />
         </label>
         <br />
         <label>
           Reservation Time:
           <input 
-            type='time'
+            type="time"
             id="time"
-            name='time'
+            name="reservation_time"
             required={true}
             onChange={handleChange}
-            value={formData.time}
+            value={formData.reservation_time}
             />
         </label>
         <br />
@@ -161,7 +177,7 @@ export default function NewReservation() {
             )
             if (confirmBox === true) {
               console.log("going back a page")
-              handleCancel();
+              // handleCancel();
             }
           }}>
             Cancel

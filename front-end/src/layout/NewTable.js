@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import ErrorAlert from './ErrorAlert';
 
+import { ValidateTable } from './Validators';
+
 export default function NewTable() {
   const initialFormState = {
     table_name: "",
@@ -18,7 +20,7 @@ export default function NewTable() {
     console.log("form data changed")
   }
 
-  const validateTable = () => {
+  const ValidateTable = () => {
     const errorArray = [];
   
     if (formData.table_name.length < 2) {
@@ -34,10 +36,10 @@ export default function NewTable() {
     }
     return true
   }
-
+  
   const submitHandler = (e) => {
     e.preventDefault();
-    if (validateTable) {
+    if (ValidateTable()) {
       // need to sort what I'm doing with this info
       console.log('submitted table form')
     }
