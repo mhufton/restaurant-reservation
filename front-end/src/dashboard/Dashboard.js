@@ -32,8 +32,28 @@ function Dashboard({ date }) {
       <ErrorAlert error={reservationsError} />
       {reservations.length === 0 ? <p>There are no reservations for today</p> : JSON.stringify(reservations)}
       <div>
-        <button>Date</button>
-        <button>Time</button>
+        <label>
+          Choose Date:
+          <input 
+            type='date'
+            id="date"
+            name='date'
+            // onChange={handleChange}
+            // value={formData.date}
+            />
+        </label>
+        <br />
+        <label>
+          Choose Time:
+          <input 
+            type='time'
+            id="time"
+            name='time'
+            required={true}
+            // onChange={handleChange}
+            // value={formData.time}
+            />
+        </label>
       </div>
     </main>
   );

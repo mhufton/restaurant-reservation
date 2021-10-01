@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom'
 import { createReservation } from "../utils/api";
 
+import ErrorAlert from './ErrorAlert';
+
 export default function NewReservation() {
   const history = useHistory();
   const initialFormState = {
@@ -60,10 +62,17 @@ export default function NewReservation() {
     }
   }
 
+  const callErrors = () => {
+    return errors.map((err, key) => {
+      <ErrorAlert key={key} error={err} />
+    })
+  }
+
   return (
     <div>
       <h1>New Reservations</h1>
-      <form onSubmit={handleSubmit} method="post">
+      <form onSubmit={handleSubmit} method="POST">
+        {callErrors()}
         <label>
           First Name:
           <input 
