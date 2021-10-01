@@ -24,13 +24,13 @@ export default function NewReservation() {
     console.log("form data changed")
   }
 
-  const validateForm = () => {
+  const validateReservation = () => {
     const today = new Date();
     const resDate = new Date(formData.date);
     const resTime = formData.time;
     const errorArray = [];
-
-    if (resDate.getDay() == 2) {
+  
+    if (resDate.getDay() === 2) {
       errorArray.push({ message: "Restaurant is closed on Tuesdays. Please choose a different day." })
     }
     if (resTime < "10:30") {
@@ -42,7 +42,7 @@ export default function NewReservation() {
     if (resDate < today) {
       errorArray.push({ message: "You can only set reservations for future dates. Please choose a different date." })
     }
-
+  
     setErrors(errorArray);
     if (errorArray.length > 0) {
       return false
@@ -52,7 +52,7 @@ export default function NewReservation() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (validateReservation()) {
       createReservation(formData)
         .then((output) => 
           history.push(`/dashboard?date=${formData.date}`))
