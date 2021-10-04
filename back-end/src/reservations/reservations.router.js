@@ -12,13 +12,26 @@ router
   .route("/")
   .get(controller.list)
   .post(controller.create)
-  .all(methodNotAllowed);
+  .all(methodNotAllowed)
 
 router
   .route("/:reservationId")
   .get(controller.read)
   .put(controller.update)
-  .delete(controller.delete)
+  .delete(controller.destroy)
   .all(methodNotAllowed)
 
 module.exports = router;
+
+// router
+//   .route("/")
+//   .get(controller.list)
+//   .post(controller.create)
+//   .all(methodNotAllowed);
+
+// router
+//   .route("/:reservationId")
+//   .get(controller.read)
+//   .put(controller.update)
+//   .delete(controller.delete)
+//   .all(methodNotAllowed)

@@ -17,19 +17,18 @@ function read(reservationId) {
   .where({ reservation_id: reservationId })
 }
 
-function update(updatedReservation) {
+function update(reservation_id, updatedRes) {
   return knex('reservations')
     .select("*")
-    .where({ reservation_id: updatedReservation.reservation_id })
-    .update(updatedReservation, "*")
-    .then((updatedRecords) => updatedRecords[0])
+    .where({ reservation_id })
+    .update(updatedRes)
 }
 
 function destroy(reservationId) {
   return knex("reservations").where({ reservation_id: reservationId }).del();
 }
 
-function listReservationsByDate(reservation_date) {
+function listByDate(reservation_date) {
   return knex("reservations")
     .select("*")
     .where({ reservation_date })
@@ -37,7 +36,7 @@ function listReservationsByDate(reservation_date) {
 
 module.exports = {
   list,
-  listReservationsByDate,
+  listByDate,
   create,
   read,
   update,

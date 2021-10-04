@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import ErrorAlert from './ErrorAlert';
 
-import { ValidateTable } from './Validators';
-
 export default function NewTable() {
   const initialFormState = {
     table_name: "",
-    capacity: "",
+    people: "",
   }
 
   const [formData, setFormData] = useState({ ...initialFormState });
@@ -74,7 +72,7 @@ export default function NewTable() {
             type="number"
             name="capacity"
             id="capacity"
-            value={formData.capacity}
+            value={formData.people}
             required={true}
             onChange={handleChange}
           />

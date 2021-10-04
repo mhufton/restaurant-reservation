@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom'
-import { createReservation } from "../utils/api";
+import { createReservation } from '../../utils/api';
 
-import ErrorAlert from './ErrorAlert';
-import { ValidateReservation } from './Validators';
+import ErrorAlert from '../ErrorAlert';
 
 export default function NewReservation() {
   const history = useHistory();
@@ -13,10 +12,9 @@ export default function NewReservation() {
     mobile_number: "",
     reservation_date: "",
     reservation_time: "",
-    peopleInParty: "",
+    people: "",
   }
 
-  const [errors, setErrors] = useState([]);
   const [formData, setFormData] = useState(initialFormState);
 
   const handleChange = ({ target }) => {
@@ -24,71 +22,81 @@ export default function NewReservation() {
       ...formData,
       [target.name]: target.value,
     })
-    // console.log("form data changed")
-    // console.log(formData.reservation_date, formData.reservation_time)
   }
 
-  const ValidateReservation = () => {
+  const validateReservation = () => {
     const today = new Date();
     const resDate = new Date(formData.reservation_date);
     const resTime = formData.reservation_time;
-    const errorArray = [];
+    let errorArray = [];
+    const people = formData.people;
   
-    if (resDate.getDay() === 2) {
-      errorArray.push({ message: "Restaurant is closed on Tuesdays. Please choose a different day." })
+    if (resDate.getDay() === "Tue") {
+      errorArray.push(new Error("Restaurant is closed on Tuesdays. Please choose a different day."))
     }
     if (resTime < "10:30") {
-      errorArray.push({ message: "Restaurant opens at 10:30AM. Please choose a different time." })
+      errorArray.push(new Error("Restaurant opens at 10:30AM. Please choose a different time."))
     }
     if (resTime > "21:30") {
-      errorArray.push({ message: "Last reservations are at 9:30PM. Please choose a different time" })
+      errorArray.push(new Error("Last reservations are at 9:30PM. Please choose a different time"))
     }
     if (resDate < today) {
-      errorArray.push({ message: "You can only set reservations for future dates. Please choose a different date." })
+      errorArray.push(new Error("You can only set reservations for future dates. Please choose a different date."))
     }
-  
-    setErrors(errorArray);
+    if (!people) {
+      errorArray.push(new Error("Reservations must inlcude the amount of peoples in the reservation"))
+    }
+    // if (people === "0") {
+    //   errorArray.push(new Error("The amount of people in a party must be larger than 0"))
+    // }
+
     if (errorArray.length > 0) {
-      return false
+      window.confirm(errorArray);
+      errorArray = [];
     }
     return true
   };
+ 
 
-  // const handleSubmit = (e) => {
+  // const handleSubmit = async(e) => {
   //   e.preventDefault();
-  //   if (ValidateReservation()) {
+  //   if (validateReservation()) {
   //     createReservation(formData)
-  //       .then((output) => 
-  //         history.push(`/dashboard?date=${formData.reservation_date}`))
-  //       .catch(errors);
+  //       // .then(() => 
+  //       //   // history.push(`/dashboard?date=${formData.reservation_date}`))
+  //       .then(() => console.log("data posted"))
+  //       .catch((errors) => console.log(errors))
   //   }
   // }
 
+//  const handleSubmit = async(e) => {
+//    e.preventDefault();
+//    console.log("formData before", formData);
+//    await createReservation(formData)
+//  }
+
+
+  const url = `http://localhost:5000/reservations`
   const handleSubmit = async(e) => {
-    console.log("submitting...")
     e.preventDefault();
-    const url = `http://localhost:5000/reservations`;
-    const options = {
-      method: "POST",
+    fetch(url, {
+      method:"POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ data: formData }),
-    }
-    const result = await fetch(url, options);
-    console.log("result", result)
-  //  return await fetchJson(url, options)
-  }
-
-  const callErrors = () => {
-    return errors.map((err, key) => {
-      <ErrorAlert key={key} error={err} />
+    })
+    .then(response => response.json())
+    .then(data => console.log('success!', data))
+    .catch((error) => {
+      console.log("Error!", error)
     })
   }
+
+
 
   return (
     <div>
       <h1>New Reservations</h1>
       <form onSubmit={handleSubmit}>
-        {errors.length > 0 ? callErrors() : null}
         <label>
           First Name:
           <input 
@@ -156,12 +164,12 @@ export default function NewReservation() {
           People in party:
           <input 
             type='number' 
-            id="peopleInParty"
-            name='peopleInParty'
+            id="people"
+            name='people'
             required={true}
             placeholder='enter number'
             onChange={handleChange}
-            value={formData.peopleInParty}
+            value={formData.people}
             />
         </label>
         <br />
