@@ -5,7 +5,7 @@ function list() {
 };
 
 function create(reservation) {
-  return knex('reservations')
+  return knex("reservations")
     .insert(reservation)
     .returning("*")
     .then((createdRecords) => createdRecords[0])
@@ -18,7 +18,7 @@ function read(reservationId) {
 }
 
 function update(reservation_id, updatedRes) {
-  return knex('reservations')
+  return knex("reservations")
     .select("*")
     .where({ reservation_id })
     .update(updatedRes)
@@ -29,6 +29,7 @@ function destroy(reservationId) {
 }
 
 function listByDate(reservation_date) {
+  reservation_date = new Date(reservation_date).toJSON().substring(0, 10);
   return knex("reservations")
     .select("*")
     .where({ reservation_date })

@@ -2,20 +2,17 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom'
 import { createReservation } from '../../utils/api';
 
-import ErrorAlert from '../ErrorAlert';
-
 export default function NewReservation() {
   const history = useHistory();
-  const initialFormState = {
+
+  const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     mobile_number: "",
     reservation_date: "",
     reservation_time: "",
     people: "",
-  }
-
-  const [formData, setFormData] = useState(initialFormState);
+  });
 
   const handleChange = ({ target }) => {
     setFormData({
@@ -57,41 +54,20 @@ export default function NewReservation() {
     return true
   };
  
-
-  // const handleSubmit = async(e) => {
-  //   e.preventDefault();
-  //   if (validateReservation()) {
-  //     createReservation(formData)
-  //       // .then(() => 
-  //       //   // history.push(`/dashboard?date=${formData.reservation_date}`))
-  //       .then(() => console.log("data posted"))
-  //       .catch((errors) => console.log(errors))
-  //   }
-  // }
-
-//  const handleSubmit = async(e) => {
-//    e.preventDefault();
-//    console.log("formData before", formData);
-//    await createReservation(formData)
-//  }
-
-
-  const url = `http://localhost:5000/reservations`
-  const handleSubmit = async(e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    fetch(url, {
-      method:"POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ data: formData }),
-    })
-    .then(response => response.json())
-    .then(data => console.log('success!', data))
-    .catch((error) => {
-      console.log("Error!", error)
-    })
-  }
-
-
+    const reservation = {
+         ...formData,
+         status: "booked"
+       }
+    if (validateReservation()) {
+      createReservation(reservation)
+        .then(() => console.log("data!"))
+        .then((output) =>
+          history.push(`/dashboard?date=${formData.reservation_date}`)
+        )
+    }
+  };
 
   return (
     <div>

@@ -1,35 +1,34 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router';
 import ErrorAlert from './ErrorAlert';
 
-export default function NewTable() {
-  const initialFormState = {
-    table_name: "",
-    people: "",
-  }
+import { createTable } from '../utils/api';
 
-  const [formData, setFormData] = useState({ ...initialFormState });
-  const [errors, setErrors] = useState([])
+export default function NewTable() {
+  const history = useHistory();
+
+  const [formData, setFormData] = useState({
+    table_name: "",
+    capacity: "",
+   });
+  const [tableErrors, setTableErrors] = useState([])
 
   const handleChange = ({ target }) => {
     setFormData({
       ...formData,
       [target.name]: target.value,
     })
-    console.log("form data changed")
   }
 
-  const ValidateTable = () => {
-    const errorArray = [];
-  
+  const validateTable = () => {
     if (formData.table_name.length < 2) {
-      errorArray.push({ message: "Table names must be at least 2 characters."})
+      setTableErrors("Table names must be at least 2 characters long.")
     }
     if (formData.capacity < 1) {
-      errorArray.push({ message: "Table capacity must be at least 1 person."})
+      setTableErrors("Table capacity must be at least 1 person.")
     }
   
-    setErrors(errorArray);
-    if (errorArray.length > 0) {
+    if (tableErrors.length > 0) {
       return false
     }
     return true
@@ -37,23 +36,18 @@ export default function NewTable() {
   
   const submitHandler = (e) => {
     e.preventDefault();
-    if (ValidateTable()) {
-      // need to sort what I'm doing with this info
-      console.log('submitted table form')
+    if (validateTable()) {
+      createTable(formData)
+        .then(() => console.log("data!"))
+        .then(() => history.push(`/dashboard`))
     }
-  }
-
-  const errorList = () => {
-    return errors.map((error, index) => {
-      <ErrorAlert key={index} error={error} />
-    })
   }
 
   return (
     <div>
       <h1>New Reservations</h1>
+      {tableErrors.length > 0 ? <ErrorAlert errors={tableErrors} /> : null}
       <form name='newTable' onSubmit={submitHandler}>
-        {errorList()}
         <label>
           Table Name:
           <input 
@@ -72,7 +66,7 @@ export default function NewTable() {
             type="number"
             name="capacity"
             id="capacity"
-            value={formData.people}
+            value={formData.capacity}
             required={true}
             onChange={handleChange}
           />

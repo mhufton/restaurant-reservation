@@ -1,7 +1,5 @@
 const service = require("./reservations.service");
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
-const P = require("pino");
-const { response } = require("express");
 
 // middleware
 async function reservationExists(req, res, next) {
@@ -29,46 +27,51 @@ async function hasProps(req, res, next) {
     } = {},
   } = req.body;
   let message = "";
-  // if (!first_name) {
-  //   message = "CONTROLLER: Reservation must include a first name"
-  // }
-  // if (!last_name) {
-  //   message = "CONTROLLER: Reservation must include a last name"
-  // }
-  // if (!mobile_number) {
-  //   message = "CONTROLLER: Reservation must include a mobile number"
-  // }
-  // if (!reservation_date) {
-  //   message = "CONTROLLER: Resevation must include a date"
-  // }
-  // if (!reservation_time) {
-  //   message = "CONTROLLER: Reservation must include a time"
-  // }
+  if (!first_name) {
+    message = "CONTROLLER: Reservation must include a first name"
+  }
+  if (!last_name) {
+    message = "CONTROLLER: Reservation must include a last name"
+  }
+  if (!mobile_number) {
+    message = "CONTROLLER: Reservation must include a mobile number"
+  }
+  if (!reservation_date) {
+    message = "CONTROLLER: Resevation must include a date"
+  }
+  if (!reservation_time) {
+    message = "CONTROLLER: Reservation must include a time"
+  }
   // if (people === 0 || !people || !Number.isInteger(people)) {
   //   message = "CONTROLLER: Reservation must include a number that is greater than 0"
   // }
-  // if (message.length) {
-  //   next({
-  //     status: 400,
-  //     message: message
-  //   })
-  // }
-  if (first_name === null) {
-    message = "CONTROLLER: Reservation must include a first name"
+  if (message.length) {
+    next({
+      status: 400,
+      message: message
+    })
   }
   res.locals.body = req.body.data;
   return next();
 }
 
-// controllers
+// CRUDL
 
 async function list(req, res) {
-  res.json({ data: await service.list() })
+  const { date } = req.query;
+  if (date) {
+    const data = await service.listByDate(date);
+    res.json({ data })
+  } else {
+    const data = await service.list();
+    res.json({ data })
+  }
 };
 
 async function create(req, res) {
-  const reservation = req.body;
-  res.status(201).json({ data: await service.create(reservation) })
+  const reservation = req.body.data;
+  const data = await service.create(reservation)
+  res.status(201).json({ data })
 }
 
 async function read(req, res) {
@@ -90,7 +93,7 @@ async function destroy(req, res) {
 
 module.exports = {
   list,
-  create: [hasProps, create],
+  create,
   read: [reservationExists, read],
   update: [reservationExists, update],
   destroy: [reservationExists, destroy]

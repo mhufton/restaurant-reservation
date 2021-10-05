@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { listReservations } from "../utils/api";
+import { Link } from "react-router-dom";
 import ErrorAlert from "../layout/ErrorAlert";
 
 import formatReservationDate from "../utils/format-reservation-date";
@@ -31,11 +32,21 @@ function Dashboard({ date }) {
     const newReservations = reservations.sort((a, b) => a.reservation_time - b.reservation_time);
     return newReservations.map((res, index) => {
       return (
-        <div>
-          <p className="resName">{res.first_name} {res.last_name}</p>
-          <p className="resDate">{res.reservation_date} at {res.reservation_time}</p>
-          <p className="resMobile">{res.mobile_number}</p>
+        <div key={index}>
+          <div>
+            <p className="resName">{res.first_name} {res.last_name}</p>
+            <p className="resDate">{res.reservation_date} at {res.reservation_time}</p>
+            <p className="resMobile">{res.mobile_number}</p>
+          </div>
+          <div>
+            <Link to={`/reservations/${res.reservation_id}/seat`}>
+              <button>Seat</button>
+            </Link>
+            <button>Edit</button>
+          </div>
+          <br />
         </div>
+        
       )
     })
   }
@@ -48,7 +59,6 @@ function Dashboard({ date }) {
       </div>
       <ErrorAlert error={reservationsError} />
       {mapReservations()}
-      {/* {reservations.length === 0 ? <p>There are no reservations for today</p> : JSON.stringify(reservations)} */}
       <div>
         <label>
           Choose Date:
