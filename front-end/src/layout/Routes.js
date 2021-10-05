@@ -18,6 +18,8 @@ import Seat from "./Seat";
  * @returns {JSX.Element}
  */
 function Routes() {
+  const [reservationId, setReservationId] = React.useState();
+
   return (
     <Switch>
       <Route exact={true} path="/">
@@ -27,7 +29,7 @@ function Routes() {
         <Redirect to={"/dashboard"} />
       </Route>
       <Route path="/dashboard">
-        <Dashboard date={today()} />
+        <Dashboard date={today()} setReservationId={setReservationId} />
       </Route>
       <Route exact path="/reservations/new">
         <NewReservation />
@@ -42,7 +44,7 @@ function Routes() {
         <Reservation />
       </Route>
       <Route exact path="/reservations/:reservationId/seat">
-        <Seat />
+        <Seat reservationId={reservationId} />
       </Route>
 
       <Route>

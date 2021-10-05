@@ -42,7 +42,9 @@ function Dashboard({ date }) {
             <Link to={`/reservations/${res.reservation_id}/seat`}>
               <button>Seat</button>
             </Link>
-            <button>Edit</button>
+            <Link to={`/reservations/${res.reservation_id}`}>
+              <button>Edit</button>
+            </Link>
           </div>
           <br />
         </div>

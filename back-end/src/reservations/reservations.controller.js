@@ -57,16 +57,20 @@ async function hasProps(req, res, next) {
 
 // CRUDL
 
+// async function list(req, res) {
+//   const { date } = req.query;
+//   if (date) {
+//     const data = await service.listByDate(date);
+//     res.json({ data })
+//   } else {
+//     const data = await service.list();
+//     res.json({ data })
+//   }
+// };
+
 async function list(req, res) {
-  const { date } = req.query;
-  if (date) {
-    const data = await service.listByDate(date);
-    res.json({ data })
-  } else {
-    const data = await service.list();
-    res.json({ data })
-  }
-};
+  res.json({ data: await service.list() })
+}
 
 async function create(req, res) {
   const reservation = req.body.data;

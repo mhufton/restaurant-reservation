@@ -6,7 +6,10 @@ exports.up = function(knex) {
       .references("reservation_id")
       .inTable("reservations")
       .onDelete("SET NULL");
-    table.timeStamps(true, true);
+    table.timestamps(true, true);
+    knex.raw(
+    'ALTER TABLE tables MODIFY COLUMN status string'
+    );
   });
 };
 
