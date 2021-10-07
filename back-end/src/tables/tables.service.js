@@ -2,7 +2,7 @@ const { del } = require("../db/connection");
 const knex = require("../db/connection");
 
 function list() {
-  return knex("tables").returning("*");
+  return knex("tables").returning("*").orderBy("table_name");
 }
 
 function create(table) {
@@ -12,11 +12,24 @@ function create(table) {
     .then((createdRecords) => createdRecords[0])
 }
 
-function read(tableId) {
+function read(table_id) {
   return knex("tables")
     .returning("*")
-    .where({ table_id: tableId })
+    .where({ table_id: table_id })
 }
+
+// function readReservation(reservation_id) {
+//   return knex("reservations")
+//     .where({ reservation_id })
+//     .then((result) => result[0])
+// }
+
+// function readTableByReservation(reservation_id) {
+//   return knex("tables")
+//     .where({ reservation_id })
+//     .whereExists(knex.select("*").from("tables").where({ reservation_id }))
+//     .then((result) => result[0])
+// }
 
 function update(table_id, updatedTable) {
   return knex("tables")
@@ -25,10 +38,26 @@ function update(table_id, updatedTable) {
     .update(updatedTable)
 }
 
-function destroy(tableId) {
+function destroy(table_id) {
   return knex("tables")
-    .where({ tableId })
+    .where({ table_id: table_id })
     .del()
+}
+
+function seat(updatedTable) {
+  return knex("tables")
+    .select("*")
+    .where({ table_id: updatedTable.table_id })
+    update(updatedTable, "*")
+    then((result) => result[0])
+};
+
+function finish(updatedTable) {
+  return knex("tables")
+    .select("*")
+    .where({ table_id: updatedTable.table_id })
+    .update(updatedTable, "*")
+    .then((result) => result[0])
 }
 
 module.exports = {
@@ -36,5 +65,7 @@ module.exports = {
   create,
   read,
   update,
-  destroy
+  destroy,
+  seat,
+  finish
 }

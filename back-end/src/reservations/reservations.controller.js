@@ -26,6 +26,10 @@ async function hasProps(req, res, next) {
       people,
     } = {},
   } = req.body;
+  const newRes = new Date(`${reservation_date} PDT`)
+    .setHours(reservation_time
+    .substring(0, 2), reservation_time.substring(3));
+  const now = Date.now();
   let message = "";
   if (!first_name) {
     message = "CONTROLLER: Reservation must include a first name"
@@ -41,6 +45,9 @@ async function hasProps(req, res, next) {
   }
   if (!reservation_time) {
     message = "CONTROLLER: Reservation must include a time"
+  }
+  if (newRes < now) {
+    message = "CONTROLLER: Reservation must be in the future."
   }
   // if (people === 0 || !people || !Number.isInteger(people)) {
   //   message = "CONTROLLER: Reservation must include a number that is greater than 0"
@@ -96,9 +103,9 @@ async function destroy(req, res) {
 }
 
 module.exports = {
-  list,
-  create,
-  read: [reservationExists, read],
-  update: [reservationExists, update],
+  list: asyncErrorBoundary(list),
+  create: [hasProps, asyncErrorBoundary(create)],
+  read: [reservationExists, asyncErrorBoundary(read)],
+  update: [reservationExists, asyncErrorBoundary(update)],
   destroy: [reservationExists, destroy]
 }

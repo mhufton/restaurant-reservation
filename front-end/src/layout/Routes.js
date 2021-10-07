@@ -5,10 +5,12 @@ import Dashboard from "../dashboard/Dashboard";
 import NotFound from "./NotFound";
 import { today } from "../utils/date-time";
 import NewReservation from "./Reservations/NewReservation";
-import NewTable from "./NewTable";
+import NewTable from "./tables/NewTable";
 import Search from "./Search";
 import Reservation from "./Reservations/Reservation";
-import Seat from "./Seat";
+import Seat from "./tables/Seat";
+
+import { readReservation } from "../utils/api";
 
 /**
  * Defines all the routes for the application.
@@ -18,7 +20,20 @@ import Seat from "./Seat";
  * @returns {JSX.Element}
  */
 function Routes() {
-  const [reservationId, setReservationId] = React.useState();
+  const [reservation_id, setReservation_id] = React.useState();
+  const [reservation, setReservation] = React.useState([]);
+  console.log("reservation_id in ROUTES", reservation_id)
+  console.log('res in routes', reservation);
+
+  React.useEffect(() => {
+    
+    async function loadReservation() {
+      const res = await readReservation(reservation_id);
+      setReservation(res) 
+      console.log("setting res", res)
+    }
+    loadReservation();
+  }, [])
 
   return (
     <Switch>
@@ -29,7 +44,7 @@ function Routes() {
         <Redirect to={"/dashboard"} />
       </Route>
       <Route path="/dashboard">
-        <Dashboard date={today()} setReservationId={setReservationId} />
+        <Dashboard date={today()} setReservation_id={setReservation_id} />
       </Route>
       <Route exact path="/reservations/new">
         <NewReservation />
@@ -44,7 +59,7 @@ function Routes() {
         <Reservation />
       </Route>
       <Route exact path="/reservations/:reservationId/seat">
-        <Seat reservationId={reservationId} />
+        <Seat reservation_id={reservation_id} reservation={reservation} />
       </Route>
 
       <Route>

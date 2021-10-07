@@ -15,7 +15,7 @@ router
   .all(methodNotAllowed)
 
 router
-  .route("/:reservationId")
+  .route("/:reservation_id")
   .get(controller.read)
   .put(controller.update)
   .delete(controller.destroy)
