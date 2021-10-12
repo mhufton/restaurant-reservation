@@ -1,34 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+import { listReservations } from '../utils/api'; 
+import Reservation from './Reservations/Reservation';
+import ErrorAlert from './ErrorAlert';
 
 export default function Search() {
-  const [number, setNumber] = React.useState();
-  const findHandler = () => {
-    console.log("finding...")
-  }
-  
-  const handleChange = ({ target }) => {
-    setNumber({
-      ...number,
-      [target.name]: target.value,
-    })
-    console.log("form data changed")
-  }
-  console.log(number)
+  const [mobile_number, setMobile_number] = useState("");
+  const [reservation, setReservation] = useState(null);
+  const [errors, setErrors] = useState(null);
 
+  const findHandler = (e) => {
+    e.preventDefault();
+    listReservations({ mobile_number })
+      .then((response) => setReservation(response))
+      .catch((error) => setErrors(error))
+  }
+
+  console.log("reservation in Search", reservation)
   return (
     <div>
-      <label>
-        Search:
-        <br />
-        <input
-          type='search'
-          name="mobile_number"
-          placeholder="Enter a customers phone number"
-          onChange={handleChange}
-        />
-      </label>
-      <br />
-      <button onClick={() => findHandler()}>Find</button>
+       <div>
+      <ErrorAlert error={errors} />
+      </div>
+      <div>
+        <form onSubmit={findHandler} >
+          <input
+            name="mobile_number"
+            type="text"
+            placeholder="Enter a customer's phone number."
+            required
+            onChange={(e) => setMobile_number(e.target.value)}
+            value={mobile_number}
+          />
+          <br />
+          <button type="submit">FIND</button>
+        </form>
+        <div>
+          {reservation.length > 0 ? 
+            reservation.map((reservation) => {
+              return <Reservation reservation={reservation} />
+            }) 
+            : <p>No Reservation Found</p>}
+        </div>
+      </div>
     </div>
   ) 
 }

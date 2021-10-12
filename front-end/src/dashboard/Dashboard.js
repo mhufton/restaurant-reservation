@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { listReservations, listTables } from "../utils/api";
 
+import { listReservations, listTables } from "../utils/api";
+import { today, previous, next } from "../utils/date-time"
 import ErrorAlert from "../layout/ErrorAlert";
 import ReservationsList from "../layout/Reservations/ReservationsList";
 import TableList from "../layout/tables/TableList";
@@ -11,56 +12,92 @@ import TableList from "../layout/tables/TableList";
  *  the date for which the user wants to view reservations.
  * @returns {JSX.Element}
  */
-function Dashboard({ date, setReservation_id }) {
+function Dashboard({ setReservation_id }) {
+  const date = today();
   const [reservations, setReservations] = useState([]);
   const [tables, setTables] = useState([]);
-  const [dashboardError, setDashboardError] = useState([]);
+  const [error, setError] = useState(null);
+  const [viewDate, setViewDate] = useState(date);
 
   useEffect(() => {
     const abortController = new AbortController();
 
-    async function loadDashboard() {
+    async function loadReservations() {
       try {
-        setDashboardError([]);
-        const reservationDate = await listReservations({ date }, abortController.signal);
-        setReservations(reservationDate);
+        if (viewDate === date) {
+          const reservationDate = await listReservations({ date }, abortController.signal);
+          setReservations(reservationDate);
+          setError(null)
+        } else {
+          const reservationDate = await listReservations({ viewDate }, abortController.signal);
+          setError(null);
+          setReservations(reservationDate)
+        }
       } catch (error) {
         setReservations([]);
-        setDashboardError([error.message]);
+        setError(error.message);
       }
     }
-    loadDashboard();
+    loadReservations();
     return () => abortController.abort();
-  }, [date]);
+  }, [date, viewDate]);
 
 
   useEffect(() => {
     const abortController = new AbortController();
     async function loadTables() {
       try { 
-        setDashboardError([]);
-        const tableList = await listTables(abortController);
+        setError(null);
+        const tableList = await listTables(abortController.signal);
         setTables(tableList);
       } catch (error) {
         setTables([]);
-        setDashboardError([error.message]);
+        setError(error.message);
       }
     }
     loadTables();
     return () => abortController.abort();
   }, [])
 
+  const handlePrevious = (e) => {
+    e.preventDefault();
+    setViewDate(previous(viewDate));
+  }
+
+  const handleToday = (e) => {
+    e.preventDefault();
+    setViewDate(date);
+  }
+
+  const handleNext = (e) => {
+    e.preventDefault();
+    setViewDate(next(viewDate))
+  }
+
   return (
     <main>
       <h1>Dashboard</h1>
       <div className="d-md-flex mb-3">
-        <h4 className="mb-0">Reservations for date</h4>
+        <h4 className="mb-0">Date: {viewDate}</h4>
       </div>
       <div>
-        <ErrorAlert error={dashboardError} />
-        {/* {mapReservations()} */}
-        <ReservationsList reservations={reservations} setReservation_id={setReservation_id} />
-        {/* <TableList tables={tables} /> */}
+        <button onClick={handlePrevious}>Previous</button>
+        <button onClick={handleToday}>Today</button>
+        <button onClick={handleNext}>Next</button>
+      </div>
+      <div>
+        {error ? <ErrorAlert error={error} /> : null}
+        <div>
+          <h4>Reservations</h4>
+          {reservations.length > 0
+            ? <ReservationsList reservations={reservations} setReservation_id={setReservation_id} />
+            : <p>There are no reservations for this date</p>
+          }
+        </div>
+        <div>
+          <h4>Tables:</h4>
+          <TableList tables={tables} />
+        </div>
       </div>
     </main>
   );

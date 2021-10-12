@@ -16,20 +16,8 @@ function read(table_id) {
   return knex("tables")
     .returning("*")
     .where({ table_id: table_id })
+    .then((createRecords) => createRecords[0])
 }
-
-// function readReservation(reservation_id) {
-//   return knex("reservations")
-//     .where({ reservation_id })
-//     .then((result) => result[0])
-// }
-
-// function readTableByReservation(reservation_id) {
-//   return knex("tables")
-//     .where({ reservation_id })
-//     .whereExists(knex.select("*").from("tables").where({ reservation_id }))
-//     .then((result) => result[0])
-// }
 
 function update(table_id, updatedTable) {
   return knex("tables")
@@ -48,8 +36,8 @@ function seat(updatedTable) {
   return knex("tables")
     .select("*")
     .where({ table_id: updatedTable.table_id })
-    update(updatedTable, "*")
-    then((result) => result[0])
+    .update(updatedTable, "*")
+    .then((result) => result[0])
 };
 
 function finish(updatedTable) {

@@ -3,15 +3,15 @@ const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
 
 // middleware
 async function reservationExists(req, res, next) {
-  const { reservationId } = req.params;
-  const foundRes = await service.read(reservationId);
+  const { reservation_id } = req.params;
+  const foundRes = await service.read(reservation_id);
   if (foundRes) {
     res.locals.reservation = foundRes;
     return next();
   }
   next({
     status: 404,
-    message: `Reservation ${reservationId} cannot be found`
+    message: `Reservation ${reservation_id} cannot be found`
   })
 }
 
@@ -30,29 +30,30 @@ async function hasProps(req, res, next) {
     .setHours(reservation_time
     .substring(0, 2), reservation_time.substring(3));
   const now = Date.now();
+  const weekday = new Date(reservation_date).getUTCDay();
   let message = "";
   if (!first_name) {
-    message = "CONTROLLER: Reservation must include a first name"
+    message = "reservation must include a first_name"
   }
   if (!last_name) {
-    message = "CONTROLLER: Reservation must include a last name"
+    message = "reservation must include a last_name"
   }
   if (!mobile_number) {
-    message = "CONTROLLER: Reservation must include a mobile number"
+    message = "reservation must include a mobile_number"
   }
   if (!reservation_date) {
-    message = "CONTROLLER: Resevation must include a date"
+    message = "resevation_date must include a date"
   }
   if (!reservation_time) {
-    message = "CONTROLLER: Reservation must include a time"
+    message = "reservation_time must include a time"
   }
   if (newRes < now) {
-    message = "CONTROLLER: Reservation must be in the future."
+    message = "reservation_time must be in the future."
   }
-  // if (people === 0 || !people || !Number.isInteger(people)) {
-  //   message = "CONTROLLER: Reservation must include a number that is greater than 0"
-  // }
-  if (message.length) {
+  if (weekday === 2) {
+    message = "reservation_date cannot be on a Tuesday."
+  }
+  if (message.length > 0) {
     next({
       status: 400,
       message: message
@@ -62,22 +63,37 @@ async function hasProps(req, res, next) {
   return next();
 }
 
+function hasValidPeople(req, res, next) {
+  const people = req.body.data.people;
+  const valid = Number.isInteger(people);
+  if (valid && people > 0) {
+    return next();
+  }
+  next({
+    status: 400,
+    message: `people '${people}' is not a valid integer`,
+  });
+}
+
 // CRUDL
 
-// async function list(req, res) {
-//   const { date } = req.query;
-//   if (date) {
-//     const data = await service.listByDate(date);
-//     res.json({ data })
-//   } else {
-//     const data = await service.list();
-//     res.json({ data })
-//   }
-// };
-
 async function list(req, res) {
-  res.json({ data: await service.list() })
+  const { date, viewDate, mobile_number } = req.query;
+  if (date) {
+    const data = await service.listByDate(date);
+    res.json({ data });
+  } else if (viewDate) {
+    const data = await service.listByDate(viewDate);
+    res.json({ data });
+  } else if (mobile_number) {
+    const data = await service.listByPhone(mobile_number);
+    res.json({ data });
+  } else {
+    const data = await service.list();
+    res.json({ data });
+  }
 }
+
 
 async function create(req, res) {
   const reservation = req.body.data;
@@ -86,26 +102,40 @@ async function create(req, res) {
 }
 
 async function read(req, res) {
-  res.json({ data: res.locals.reservation })
+  const data = res.locals.reservation;
+  res.json({ data })
 }
 
 async function update(req, res) {
-  const reservation_id = res.locals.reservation[0].reservation_id;
+  const reservation_id = res.locals.reservation.reservation_id;
   const updatedRes = req.body;
   await service.update(reservation_id, updatedRes);
   res.json({ data: updatedRes })
 }
 
 async function destroy(req, res) {
-  const reservation_id = res.locals.reservation[0].reservation_id;
+  const reservation_id = res.locals.reservation.reservation_id;
   await service.destroy(reservation_id);
   res.sendStatus(204);
 }
 
 module.exports = {
   list: asyncErrorBoundary(list),
-  create: [hasProps, asyncErrorBoundary(create)],
-  read: [reservationExists, asyncErrorBoundary(read)],
-  update: [reservationExists, asyncErrorBoundary(update)],
-  destroy: [reservationExists, destroy]
+  create: [
+    hasProps,
+    hasValidPeople,
+    asyncErrorBoundary(create)
+  ],
+  read: [
+    asyncErrorBoundary(reservationExists),
+    asyncErrorBoundary(read)
+  ],
+  update: [
+    asyncErrorBoundary(reservationExists),
+    hasProps,
+    hasValidPeople,
+    asyncErrorBoundary(update)],
+  destroy: [
+    asyncErrorBoundary(reservationExists),
+    destroy]
 }

@@ -10,8 +10,6 @@ import Search from "./Search";
 import Reservation from "./Reservations/Reservation";
 import Seat from "./tables/Seat";
 
-import { readReservation } from "../utils/api";
-
 /**
  * Defines all the routes for the application.
  *
@@ -21,19 +19,6 @@ import { readReservation } from "../utils/api";
  */
 function Routes() {
   const [reservation_id, setReservation_id] = React.useState();
-  const [reservation, setReservation] = React.useState([]);
-  console.log("reservation_id in ROUTES", reservation_id)
-  console.log('res in routes', reservation);
-
-  React.useEffect(() => {
-    
-    async function loadReservation() {
-      const res = await readReservation(reservation_id);
-      setReservation(res) 
-      console.log("setting res", res)
-    }
-    loadReservation();
-  }, [])
 
   return (
     <Switch>
@@ -59,7 +44,7 @@ function Routes() {
         <Reservation />
       </Route>
       <Route exact path="/reservations/:reservationId/seat">
-        <Seat reservation_id={reservation_id} reservation={reservation} />
+        <Seat reservation_id={reservation_id} />
       </Route>
 
       <Route>

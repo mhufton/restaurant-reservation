@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router';
-import ErrorAlert from './../ErrorAlert';
 
+import ErrorAlert from './../ErrorAlert';
 import { createTable } from '../../utils/api';
 
 export default function NewTable() {
@@ -19,6 +19,7 @@ export default function NewTable() {
       [target.name]: target.value,
     })
   }
+  console.log("formData.table_name.length", formData.table_name.length)
 
   const validateTable = () => {
     if (formData.table_name.length < 2) {
@@ -37,9 +38,11 @@ export default function NewTable() {
   const submitHandler = (e) => {
     e.preventDefault();
     if (validateTable()) {
+      console.log("NewTable - creating new table")
       createTable(formData)
         .then(() => console.log("data!"))
         .then(() => history.push(`/dashboard`))
+        .catch((error) => setTableErrors(error))
     }
   }
 
@@ -55,7 +58,7 @@ export default function NewTable() {
             name="table_name"
             id="table_name"
             value={formData.table_name}
-            require={true}
+            required={true}
             onChange={handleChange}
           />
         </label>
