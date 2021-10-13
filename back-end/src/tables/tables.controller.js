@@ -32,9 +32,11 @@ function hasProps(req, res, next) {
 }
 
 async function tableExists(req, res, next) {
-  console.log("Table exists code")
+  console.log('checking if the table exists')
   const { table_id } = req.params;
+  console.log("table_id", table_id)
   const data = await service.read(table_id);
+  console.log("Table exists code", data)
   if (data) {
     console.log("got data", data)
     res.locals.table = data;
@@ -72,6 +74,7 @@ function tableIsFree(req, res, next) {
 function tableIsOccupied(req, res, next) {
   const { status } = res.locals.table;
   if (status.toLowerCase() === "occupied") {
+    console.log('table is occupied')
     return next()
   }
   return next({
@@ -141,9 +144,10 @@ async function finish(req, res) {
       ...table,
       status: "Free"
   }
+  console.log("tables.controller finish")
   const updatedTable = await service.finish(updatedTableData);
   const updatedReservation = {
-      status: "finished", 
+      status: "Finished", 
       reservation_id: table.reservation_id,
   }
   await reservationService.update(updatedReservation); 

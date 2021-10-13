@@ -36,9 +36,9 @@ export default function Search() {
           <button type="submit">FIND</button>
         </form>
         <div>
-          {reservation.length > 0 ? 
-            reservation.map((reservation) => {
-              return <Reservation reservation={reservation} />
+          {reservation && reservation.length > 0 ? 
+            reservation.map((reservation, index) => {
+              return <Reservation reservation={reservation} key={index} />
             }) 
             : <p>No Reservation Found</p>}
         </div>
