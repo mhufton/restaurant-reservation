@@ -19,7 +19,7 @@ export default function Seat() {
   const [tables, setTables] = useState([]);
   const [errors, setErrors] = useState(null);
   const [formData, setFormData] = useState({ table_id: "" });
-
+  
   useEffect(() => {
     async function loadData() {
        try {
@@ -70,6 +70,7 @@ export default function Seat() {
     setErrors(null);
     async function seatReservation() {
       try {
+        console.log("seat.js handling submit", formData, " & ", reservation.reservation_id)
         await seatTable(formData, reservation.reservation_id, abortController.signal);
         history.push("/dashboard")
       } catch (error) {

@@ -1,5 +1,6 @@
 const service = require("./reservations.service");
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
+const specifiedTimeString = require("../utils/specifiedTimeString")
 
 // middleware
 async function reservationExists(req, res, next) {
@@ -7,6 +8,7 @@ async function reservationExists(req, res, next) {
   const foundRes = await service.read(reservation_id);
   if (foundRes) {
     res.locals.reservation = foundRes;
+    console.log("reservation exists...")
     return next();
   }
   next({
@@ -26,10 +28,7 @@ async function hasProps(req, res, next) {
       people,
     } = {},
   } = req.body;
-  const newRes = new Date(`${reservation_date} PDT`)
-    .setHours(reservation_time
-    .substring(0, 2), reservation_time.substring(3));
-  const now = Date.now();
+  console.log("people", people, typeof(Number(people)))
   const weekday = new Date(reservation_date).getUTCDay();
   let message = "";
   if (!first_name) {
@@ -42,16 +41,16 @@ async function hasProps(req, res, next) {
     message = "reservation must include a mobile_number"
   }
   if (!reservation_date) {
-    message = "resevation_date must include a date"
+    message = "reservation_date must include a date"
   }
   if (!reservation_time) {
     message = "reservation_time must include a time"
   }
-  if (newRes < now) {
-    message = "reservation_time must be in the future."
+  if (Number(people) <= 0 || !people || !Number.isInteger(Number(people))) {
+    message = "Reservation must have a number of people that is greater than 0."
   }
-  if (weekday === 2) {
-    message = "reservation_date cannot be on a Tuesday."
+  if (reservation_time && !reservation_time.match(/\d\d:\d\d/)) {
+    message = "The reservation_time must be an actual time";
   }
   if (message.length > 0) {
     next({
@@ -60,19 +59,47 @@ async function hasProps(req, res, next) {
     })
   }
   res.locals.body = req.body.data;
+  console.log("reservation has props", res.locals.body)
   return next();
 }
 
-function hasValidPeople(req, res, next) {
-  const people = req.body.data.people;
-  const valid = Number.isInteger(people);
-  if (valid && people > 0) {
-    return next();
+function dateAndTimeValidation(req, res, next) {
+  const { reservation_date, reservation_time } = res.locals.body;
+  dateObject = new Date(reservation_date + "T" + reservation_time);
+  const today = new Date();
+  const [year, month, day] = [
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  ];
+  const todayObject = new Date(year, month, day);
+  todayObject.setHours(0);
+  
+  const reservationTimeTruncated = reservation_time.match(/\d\d:\d\d/)[0];
+  const timeNow = today.toTimeString().match(/\d\d:\d\d/)[0];
+
+  let message = "";
+  if (dateObject < today) {
+    message = "reservation_date must be in the future."
   }
-  next({
-    status: 400,
-    message: `people '${people}' is not a valid integer`,
-  });
+  if (dateObject.getDay() === 2) {
+    message = "restaurant is closed on Tuesday."
+  }
+  if (
+    reservationTimeTruncated < specifiedTimeString(10, 30) ||
+    reservationTimeTruncated > specifiedTimeString(21, 30)
+  ) {
+    message = "reservation_time must be between 10:30AM and 9:30PM."
+  }
+
+  if (message.length) {
+    next({
+      status: 400,
+      message: message,
+    })
+  }
+  console.log("valid date and time")
+  return next();
 }
 
 // CRUDL
@@ -106,11 +133,35 @@ async function read(req, res) {
   res.json({ data })
 }
 
+// async function update(req, res) {
+//   const { reservation } = res.locals;
+//   console.log("reservation", res.locals.body)
+//   const { data } = req.body;
+//   console.log("data", data)
+//   const updatedReservationData = {
+//     ...reservation,
+//     ...data,
+//   }
+//   console.log("updateReservationData", updatedReservationData)
+//   const updatedReservation = await service.update(updatedReservationData);
+//   console.log("updatedReservation", updatedReservation)
+//   res.json({ data: updatedReservation });
+// }
+
 async function update(req, res) {
-  const reservation_id = res.locals.reservation.reservation_id;
-  const updatedRes = req.body;
-  await service.update(reservation_id, updatedRes);
-  res.json({ data: updatedRes })
+  const updatedReservation = { ...req.body.data };
+  console.log("updatedReservation", updatedReservation);
+  const { reservation_id } = req.params;
+  console.log("reservation_id", reservation_id)
+  const data = await service.update(reservation_id, updatedReservation);
+  res.status(200).json({ data });
+}
+
+async function updateStatus(req, res) {
+  const { status } = req.body.data;
+  const { reservation_id } = req.params;
+  const data = await service.updateStatus(reservation_id, status);
+  res.status(200).json({ data });
 }
 
 async function destroy(req, res) {
@@ -123,7 +174,7 @@ module.exports = {
   list: asyncErrorBoundary(list),
   create: [
     hasProps,
-    hasValidPeople,
+    dateAndTimeValidation,
     asyncErrorBoundary(create)
   ],
   read: [
@@ -132,10 +183,16 @@ module.exports = {
   ],
   update: [
     asyncErrorBoundary(reservationExists),
-    hasProps,
-    hasValidPeople,
+    // hasProps,
+    // dateAndTimeValidation,
     asyncErrorBoundary(update)],
+  updateStatus: [
+    asyncErrorBoundary(reservationExists),
+    // hasProps,
+    // dateAndTimeValidation,
+    asyncErrorBoundary(updateStatus)
+  ],
   destroy: [
     asyncErrorBoundary(reservationExists),
-    destroy]
+    destroy],
 }

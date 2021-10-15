@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import ErrorAlert from '../ErrorAlert';
-import { finishTable } from '../../utils/api';
+import { finishTable, updateReservationStatus } from '../../utils/api';
 
 export default function TableList({ tables }) {
   const history = useHistory();
@@ -10,16 +10,28 @@ export default function TableList({ tables }) {
   const [errors, setErrors] = useState(null);
 
   return tables.map((table, index) => {
+    const abortController = new AbortController();
     const finishHandler = (e) => {
       e.preventDefault();
-      console.log("finishing finish handler")
       const confirmBox = window.confirm(
         "Is this table ready to seat new guests? This cannot be undone."
       );
-      console.log("confirmBox", confirmBox)
       if (confirmBox === true) {
-        finishTable(table.table_id).catch(setErrors);
-        history.go();
+        async function finishTableAndUpdateRes() {
+          try {
+            await finishTable(table.table_id)
+            await updateReservationStatus(
+              { status: "Finished" },
+              table.reservation_id
+            )
+            setErrors(null)
+            history.go()
+          } catch (errors) {
+            setErrors(errors)
+          }
+        }
+        finishTableAndUpdateRes();
+        return () => abortController.abort();
       }
     }
 
@@ -29,10 +41,17 @@ export default function TableList({ tables }) {
           {errors ? <ErrorAlert error={errors} /> : null}
         </div>
         <div key={index} >
-          <p>Table: {table.table_name} - Capacity: {table.capacity}</p>
+          <p>Table: {table.table_name} -  {table.capacity}</p>
+          <p data-table-id-status={`${table.table_id}`}>
           Status: {table.status} 
+          </p>
           {table.status.toLowerCase() === "occupied" 
-            ? <button onClick={finishHandler}>Finish</button> 
+            ? <button 
+              onClick={finishHandler}
+              data-table-id-finish={table.table_id}
+              >
+                Finish
+              </button> 
             : null}
         </div>
       </div>

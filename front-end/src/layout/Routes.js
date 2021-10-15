@@ -9,6 +9,7 @@ import NewTable from "./tables/NewTable";
 import Search from "./Search";
 import Reservation from "./Reservations/Reservation";
 import Seat from "./tables/Seat";
+import EditReservation from "./Reservations/EditReservation";
 
 /**
  * Defines all the routes for the application.
@@ -19,6 +20,7 @@ import Seat from "./tables/Seat";
  */
 function Routes() {
   const [reservation_id, setReservation_id] = React.useState();
+  console.log("reservation_id in routes", reservation_id)
 
   return (
     <Switch>
@@ -40,11 +42,14 @@ function Routes() {
       <Route exact path='/search'>
         <Search />
       </Route>
-      <Route exact path='/reservations/:reservationId'>
+      <Route exact path='/reservations/:reservation_id'>
         <Reservation />
       </Route>
       <Route exact path="/reservations/:reservationId/seat">
         <Seat reservation_id={reservation_id} />
+      </Route>
+      <Route exact path="/reservations/:reservation_id/edit">
+        <EditReservation reservation_id={reservation_id} />
       </Route>
 
       <Route>

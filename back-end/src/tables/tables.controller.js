@@ -1,6 +1,6 @@
 const service = require("./tables.service");
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
-const reservationService = require("../reservations/reservations.service")
+const reservationService = require("../reservations/reservations.service");
 
 function hasProps(req, res, next) {
   const {
@@ -15,10 +15,13 @@ function hasProps(req, res, next) {
     message = "Table must have a table_name"
   }
   if (table_name.length < 2 || table_name === undefined) {
-    message = "Table name must be at least 2 characters long."
+    message = "table_name must be at least 2 characters long."
   }
   if (!capacity) {
     message = "Tables must include a capacity."
+  }
+  if (isNaN(capacity)) {
+    message = "Table capacity must be a number."
   }
   if (message.length) {
     return next({
@@ -32,14 +35,11 @@ function hasProps(req, res, next) {
 }
 
 async function tableExists(req, res, next) {
-  console.log('checking if the table exists')
   const { table_id } = req.params;
-  console.log("table_id", table_id)
   const data = await service.read(table_id);
-  console.log("Table exists code", data)
   if (data) {
-    console.log("got data", data)
     res.locals.table = data;
+    console.log("table exists", res.locals.table)
     return next()
   }
   return next({
@@ -67,19 +67,21 @@ function tableIsFree(req, res, next) {
   }
   return next({
     status: 400,
-    message: "Table is currently occupied."
+    message: "Table is occupied."
   })
 }
 
 function tableIsOccupied(req, res, next) {
+  console.log("checking if table is occupied")
   const { status } = res.locals.table;
+  console.log("current table status", status)
   if (status.toLowerCase() === "occupied") {
-    console.log('table is occupied')
+    console.log("table occupied!")
     return next()
   }
   return next({
     status: 400,
-    message: "Table is currently free."
+    message: "Table is currently not occupied."
   })
 }
 
@@ -126,38 +128,32 @@ async function seat(req, res) {
     reservation_id: reservation_id,
     status: "Occupied",
   }
-  
   const updatedTable = await service.seat(updatedTableData);
-  console.log("updatedTable", updatedTable)
   const updatedReservation = await reservationService.update(reservation_id, {
     status: "Seated",
     reservation_id: reservation_id,
   });
-
-  res.json({ data: {updatedTable, updatedReservation} })
+  res.status(200).json({ data: {updatedTable, updatedReservation} })
 };
 
 async function finish(req, res) {
-  const { table_id } = req.params;
+  console.log("finishing table")
   const { table } = res.locals;
+  console.log("table fro res.locals", res.locals.table)
   const updatedTableData = {
       ...table,
-      status: "Free"
+      status: "Free",
+      reservation_id: null,
   }
-  console.log("tables.controller finish")
+  console.log("updating the data", updatedTableData)
   const updatedTable = await service.finish(updatedTableData);
-  const updatedReservation = {
-      status: "Finished", 
-      reservation_id: table.reservation_id,
-  }
-  await reservationService.update(updatedReservation); 
   res.json({ data: updatedTable });
 }
 
 async function reservationAlreadySeated(req, res, next) {
   const { reservation_id } = req.body.data;
   const seated = await reservationService.read(reservation_id);
-  if (!seated) {
+  if (seated.status.toLowerCase() !== "seated") {
     return next();
   }
   next({
@@ -165,6 +161,8 @@ async function reservationAlreadySeated(req, res, next) {
     message: `reservation_id ${reservation_id} is already seated at ${seated.table_id}`
   })
 }
+
+
 
 module.exports = {
   list: asyncErrorBoundary(list),
@@ -188,5 +186,9 @@ module.exports = {
     asyncErrorBoundary(tableExists),
     tableIsOccupied,
     asyncErrorBoundary(finish)
+  ],
+  delete: [
+    tableExists,
+    asyncErrorBoundary(service.deleteSeatReservation)
   ]
 }

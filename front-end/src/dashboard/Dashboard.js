@@ -21,7 +21,7 @@ function Dashboard({ setReservation_id }) {
 
   useEffect(() => {
     const abortController = new AbortController();
-
+  
     async function loadReservations() {
       try {
         if (viewDate === date) {
@@ -41,6 +41,7 @@ function Dashboard({ setReservation_id }) {
     loadReservations();
     return () => abortController.abort();
   }, [date, viewDate]);
+  
 
 
   useEffect(() => {
@@ -73,7 +74,7 @@ function Dashboard({ setReservation_id }) {
     e.preventDefault();
     setViewDate(next(viewDate))
   }
-
+  
   return (
     <main>
       <h1>Dashboard</h1>
@@ -91,7 +92,7 @@ function Dashboard({ setReservation_id }) {
           <h4>Reservations</h4>
           {reservations.length > 0
             ? <ReservationsList reservations={reservations} setReservation_id={setReservation_id} />
-            : <p>There are no reservations for this date</p>
+            : <p>There are either no reservations for this date or all reservations are finished</p>
           }
         </div>
         <div>
