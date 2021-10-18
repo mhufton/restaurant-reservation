@@ -75,14 +75,16 @@ export default function ReservationForm({ reservation_id }) {
   };
  
   const handleSubmit = (e) => {
+    console.log("submitting some reservation details")
     e.preventDefault();
     if (!reservation_id) {
+      console.log("this is a new reservation")
       const reservation = {
         ...formData,
         status: "Booked"
       }
       if (validateReservation()) {
-        createReservation(reservation)
+        createReservation(formData)
           .then(() => console.log("data!"))
           .catch((error) => setErrors(error))
           .then((output) =>

@@ -1,4 +1,4 @@
-export default function onlyValidProperties(VALID_PROPS) {
+function onlyValidProperties(VALID_PROPS) {
   return function (req, res, next) {
     const { data = {} } = req.body;
     const invalidFields = Object.keys(data).filter(
@@ -14,3 +14,5 @@ export default function onlyValidProperties(VALID_PROPS) {
     next();
   };
 }
+
+module.exports = onlyValidProperties;

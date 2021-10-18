@@ -46,13 +46,20 @@ export default function ReservationsList({ reservations, setReservation_id }) {
           <Reservation reservation={reservation} />
         </div>
         <div>
-          <Link to={`/reservations/${reservation_id}/seat`}>
+          {/* <Link to={`/reservations/${reservation_id}/seat`}>
             <button onClick={() => {
               setReservation_id(reservation.reservation_id)
             }}>
               Seat
             </button>
-          </Link>
+          </Link> */}
+          <a href={`/reservations/${reservation_id}/seat`}>
+            <button onClick={() => {
+              setReservation_id(reservation.reservation_id)
+            }}>
+              Seat
+            </button>
+          </a>
           <Link to={`/reservations/${reservation.reservation_id}/edit`} >
           <button onClick={() => {
               setReservation_id(reservation.reservation_id)

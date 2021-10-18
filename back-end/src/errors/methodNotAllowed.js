@@ -1,6 +1,6 @@
 function methodNotAllowed(req, res, next) {
   next({
-    status: 405,
+    status: 400,
     message: `${req.method} not allowed for ${req.originalUrl}`,
   });
 }
