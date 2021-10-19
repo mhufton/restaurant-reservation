@@ -4,9 +4,10 @@ import { useHistory } from 'react-router-dom'
 import { 
   createReservation,
   readReservation,
-  updateReservation
+  updateReservation,
   // editReservation,
 } from '../../utils/api';
+import ErrorAlert from '../ErrorAlert';
 
 export default function ReservationForm({ reservation_id }) {
   const history = useHistory();
@@ -19,7 +20,7 @@ export default function ReservationForm({ reservation_id }) {
     reservation_time: "",
     people: "",
   });
-
+  console.log("reservation_id in ResForm", reservation_id)
   const [errors, setErrors] = useState(null);
 
   React.useEffect(() => {
@@ -49,23 +50,23 @@ export default function ReservationForm({ reservation_id }) {
     const today = new Date();
     const resDate = new Date(formData.reservation_date);
     const resTime = formData.reservation_time;
-    const errorArray = [];
+    let errorArray = [];
     const people = formData.people;
   
     if (resDate.getDay() === "Tue") {
-      errorArray.push(new Error("Restaurant is closed on Tuesdays. Please choose a different day."))
+      setErrors("Restaurant is closed on Tuesdays. Please choose a different day.")
     }
     if (resTime < "10:30") {
-      errorArray.push(new Error("Restaurant opens at 10:30AM. Please choose a different time."))
+      setErrors("Restaurant opens at 10:30AM. Please choose a different time.")
     }
     if (resTime > "21:30") {
-      errorArray.push(new Error("Last reservations are at 9:30PM. Please choose a different time"))
+      setErrors("Last reservations are at 9:30PM. Please choose a different time")
     }
     if (resDate < today) {
-      errorArray.push(new Error("You can only set reservations for future dates. Please choose a different date."))
+      setErrors("You can only set reservations for future dates. Please choose a different date.")
     }
     if (!people) {
-      errorArray.push(new Error("Reservations must inlcude the amount of peoples in the reservation"))
+      setErrors("Reservations must inlcude the amount of peoples in the reservation")
     }
     if (errorArray.length > 0) {
       window.confirm(errorArray);
@@ -76,20 +77,22 @@ export default function ReservationForm({ reservation_id }) {
  
   const handleSubmit = (e) => {
     console.log("submitting some reservation details")
+    console.log('typeof(poeple)', typeof(formData.people))
     e.preventDefault();
     if (!reservation_id) {
       console.log("this is a new reservation")
-      const reservation = {
-        ...formData,
-        status: "Booked"
-      }
       if (validateReservation()) {
-        createReservation(formData)
-          .then(() => console.log("data!"))
-          .catch((error) => setErrors(error))
+        console.log('form is valid')
+        const reservation = {
+          ...formData,
+          people: Number(formData.people),
+          status: "booked",
+        };
+        console.log('typeof(poeple)', typeof(formData.people))
+        createReservation(reservation)
           .then((output) =>
-            history.push(`/dashboard?date=${formData.reservation_date}`)
-         )
+            history.push(`/dashboard?date=${formData.reservation_date}`))
+          .catch((error) => setErrors(error))
       }
     }
     if (reservation_id ) {
@@ -105,6 +108,7 @@ export default function ReservationForm({ reservation_id }) {
 
   return (
     <div>
+      {errors !== null ? <ErrorAlert error={errors} /> : null}
       {reservation_id ? <h1>Edit Reseravation</h1> : <h1>New Reservation</h1>}
       <form onSubmit={handleSubmit}>
         <label>

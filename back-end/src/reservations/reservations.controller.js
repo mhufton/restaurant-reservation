@@ -65,18 +65,6 @@ async function reservationExists(req, res, next) {
   });
 }
 
-// function reservationIdIsCorrectIfPresent(req, res, next) {
-//   const { reservationId } = req.params;
-//   const { reservation_id } = res.locals.reservation;
-//   if (!reservation_id || Number(reservation_id) === Number(reservationId)) {
-//     return next();
-//   }
-//   next({
-//     status: 400,
-//     message: `reservation_id '${reservation_id}' should be absent or match url '${reservationId}'.`,
-//   });
-// }
-
 function hasValidDate(req, res, next) {
   const date = req.body.data.reservation_date;
   const valid = Date.parse(date);
@@ -206,7 +194,9 @@ function reservationIsDuringBusinessHours(req, res, next) {
 
 // CRUD FUNCTIONS
 async function create(req, res) {
+  console.log("creating a new reservation")
   const newReservation = { ...req.body.data, status: "booked" };
+  console.log("newReservation", newReservation)
   const data = await service.create(newReservation);
   res.status(201).json({ data });
 }
@@ -218,14 +208,19 @@ function read(req, res) {
 
 async function update(req, res) {
   const updatedReservation = { ...req.body.data };
+  console.log("updatedReservation", updatedReservation)
+  console.log("req.body.data", ...req.body.data)
   const { reservation_id } = req.params;
+  console.log("reservation_id", reservation_id)
   const data = await service.update(reservation_id, updatedReservation);
   res.status(200).json({ data });
 }
 
 async function updateStatus(req, res) {
   const { status } = req.body.data;
+  console.log("status", status, "req.body.data", req.body.data)
   const { reservation_id } = req.params;
+  console.log("reservation_id", reservation_id, "req.params", req.params)
   const data = await service.updateStatus(reservation_id, status);
   res.status(200).json({ data });
 }
@@ -263,7 +258,6 @@ module.exports = {
   read: [asyncErrorBoundary(reservationExists), read],
   update: [
     asyncErrorBoundary(reservationExists),
-    // reservationIdIsCorrectIfPresent,
     hasOnlyValidUpdateProperties,
     hasRequiredUpdateProperties,
     hasValidDate,
