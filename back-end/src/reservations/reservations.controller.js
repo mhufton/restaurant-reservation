@@ -194,9 +194,10 @@ function reservationIsDuringBusinessHours(req, res, next) {
 
 // CRUD FUNCTIONS
 async function create(req, res) {
-  console.log("creating a new reservation")
-  const newReservation = { ...req.body.data, status: "booked" };
-  console.log("newReservation", newReservation)
+  const newReservation = { 
+    ...req.body.data,
+    status: "booked",
+  };
   const data = await service.create(newReservation);
   res.status(201).json({ data });
 }
@@ -206,23 +207,73 @@ function read(req, res) {
   res.json({ data });
 }
 
-async function update(req, res) {
-  const updatedReservation = { ...req.body.data };
-  console.log("updatedReservation", updatedReservation)
-  console.log("req.body.data", ...req.body.data)
-  const { reservation_id } = req.params;
-  console.log("reservation_id", reservation_id)
-  const data = await service.update(reservation_id, updatedReservation);
-  res.status(200).json({ data });
-}
+// async function update(req, res) {
+//   const updatedRes = req.body.data;
+//   console.log("UPDATE: updatedReservation", updatedRes)
+//   console.log("UPDATE: data from API", data)
+//   const { reservation_id } = req.params;
+//   console.log("UPDATE: reservation_id", reservation_id)
+//   const data = await service.update(reservation_id, updatedRes);
+//   res.status(201).json({ data });
+// }
+
+// async function updateReservation(req, res) {
+//   console.log("UPDATE_RES: res.locals.reservation", res.locals.reservation)
+//   const reservation = res.locals.reservation;
+//   console.log("UPDATE_RES: reservation", reservation)
+//   const { data } = req.body;
+//   console.log("UPDATE_RES: data", data)
+//   const updatedRes = {
+//     ...res.locals.reservation,
+//     ...data,
+//   }
+//   console.log("UPDATE_RES: updatedRes", updatedRes)
+//   const updatedReservation = await service.update(updatedRes);
+//   res.status(200).json({ data: updatedReservation });
+// }
+
+// async function updateStatus(req, res) {
+//   const { reservation, status } = res.locals;
+//   // const status = reservation.status;
+//   console.log("UPDATE_STATUS: reservation", reservation, " status", status)
+//   const updatedRes = {
+//     ...reservation,
+//     status: status,
+//   }
+//   const updatedReservation = await service.update(updatedRes);
+//   res.status(200).json({ data: updatedReservation });
+// }
+
+// async function updateStatus(req, res) {
+//   const { status } = req.body.data;
+//   console.log("UPDATESTATUS: status", status, "req.body.data", req.body.data)
+//   const { reservation_id } = req.params;
+//   console.log("UPDATESTATUS: reservation_id", reservation_id, "req.params", req.params)
+//   const data = await service.updateStatus(reservation_id, status);
+//   res.status(200).json({ data });
+// }
 
 async function updateStatus(req, res) {
-  const { status } = req.body.data;
-  console.log("status", status, "req.body.data", req.body.data)
-  const { reservation_id } = req.params;
-  console.log("reservation_id", reservation_id, "req.params", req.params)
-  const data = await service.updateStatus(reservation_id, status);
-  res.status(200).json({ data });
+  const { reservation, status } = res.locals;
+  console.log("UPDATE_STATUS: res.locals")
+  const updatedReservationData = {
+    ...reservation,
+    status: status,
+  }
+  console.log("UPDATE_STATUS: updatedReservationData", updatedReservationData)
+  const updatedReservation = await service.update(updatedReservationData);
+  res.json({ data: updatedReservation });
+}
+
+async function updateReservation(req, res) {
+  const { reservation } = res.locals;
+  const { data } = req.body;
+  const updatedReservationData = {
+    ...reservation,
+    ...data,
+  }
+  const updatedReservation = await service.update(updatedReservationData);
+  res.json({ data: updatedReservation });
 }
 
 async function list(req, res) {
@@ -267,7 +318,7 @@ module.exports = {
     noReservationsOnTuesdays,
     noReservationsInPast,
     reservationIsDuringBusinessHours,
-    asyncErrorBoundary(update),
+    asyncErrorBoundary(updateReservation),
   ],
   updateStatus: [
     asyncErrorBoundary(reservationExists),

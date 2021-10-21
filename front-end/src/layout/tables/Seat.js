@@ -5,6 +5,8 @@ import {
   listTables,
   readReservation,
   seatTable,
+  updateReservation,
+  updateStatus,
 } from '../../utils/api';
 import Reservation from '../Reservations/Reservation';
 import ErrorAlert from '../ErrorAlert';
@@ -21,7 +23,6 @@ export default function Seat() {
   const [formData, setFormData] = useState({ table_id: "" });
   
   useEffect(() => {
-    const abortController = new AbortController();
     async function loadData() {
        try {
          setErrors(null)
@@ -73,6 +74,11 @@ export default function Seat() {
       try {
         console.log("seat.js handling submit", formData, " & ", reservation.reservation_id)
         await seatTable(formData, reservation.reservation_id, abortController.signal);
+        await updateStatus(
+          reservation.reservation_id,
+          { status: "seated" },
+          abortController.signal,
+        )
         setErrors(null)
         history.push("/dashboard")
       } catch (error) {

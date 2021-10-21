@@ -3,15 +3,17 @@ import { Link, useHistory } from "react-router-dom";
 
 import ErrorAlert from '../ErrorAlert';
 import Reservation from './Reservation';
-import { updateReservationStatus } from '../../utils/api';
+import { updateReservation, updateStatus } from '../../utils/api';
 
 export default function ReservationsList({ reservations, setReservation_id }) {
   const [errors, setErrors] = React.useState(null);
   const history = useHistory();
 
   const filteredReservations = reservations
-    .filter((reservation) => reservation.status.toLowerCase() !== "finished")
-
+    .filter((reservation) => reservation.status.toLowerCase() === "booked" 
+    || reservation.status.toLowerCase() === "seated"
+    );
+  
   return filteredReservations.map((reservation, index) => {
     const reservation_id = reservation.reservation_id;
 
@@ -23,10 +25,7 @@ export default function ReservationsList({ reservations, setReservation_id }) {
       if (confirmWindow) {
         async function updatingReservation() {
           try {
-            await updateReservationStatus(
-              { status: "Canceled" },
-              reservation.reservation_id
-            )
+            await updateReservation(reservation.reservation_id, "cancelled", abortController.signal) 
             history.go();
           } catch (error) {
             setErrors(error)
@@ -46,25 +45,25 @@ export default function ReservationsList({ reservations, setReservation_id }) {
           <Reservation reservation={reservation} />
         </div>
         <div>
-          <a href={`/reservations/${reservation_id}/seat`}>
-            <button onClick={() => {
-              setReservation_id(reservation.reservation_id)
-            }}>
-              Seat
-            </button>
-          </a>
+          {reservation.status === "booked"
+            ? <a href={`/reservations/${reservation_id}/seat`}>
+                <button>
+                  Seat
+                </button>
+              </a>
+            : null
+          }
           <a href={`/reservations/${reservation_id}/edit`}>
-            <button onClick={() => {
-                setReservation_id(reservation.reservation_id)
-              }}>
+            <button>
                 Edit
             </button>
           </a>
           <button 
-              data-reservation-id-cancel={reservation.reservation_id}
-              onClick={handleCancel}>
-              Cancel
-            </button>
+            data-reservation-id-cancel={reservation.reservation_id}
+            onClick={handleCancel}
+          >
+            Cancel
+          </button>
         </div>
         <br />
       </div>

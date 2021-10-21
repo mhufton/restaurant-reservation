@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import ErrorAlert from '../ErrorAlert';
-import { finishTable, updateReservationStatus } from '../../utils/api';
+import { finishTable, updateStatus } from '../../utils/api';
 
 export default function TableList({ tables }) {
   const history = useHistory();
@@ -20,10 +20,10 @@ export default function TableList({ tables }) {
         async function finishTableAndUpdateRes() {
           try {
             await finishTable(table.table_id)
-            await updateReservationStatus(
-              { status: "Finished" },
-              table.reservation_id
-            )
+            await updateStatus({
+              status: "finished",
+              reservation_id: table.reservation_id
+            })
             setErrors(null)
             history.go()
           } catch (errors) {

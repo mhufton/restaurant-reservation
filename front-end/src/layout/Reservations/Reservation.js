@@ -1,7 +1,6 @@
 import React from 'react';
 
 export default function Reservation({ reservation }) {
-  
   return (
     <div key={reservation.reservation_id}>
       <p>{reservation.first_name} {reservation.last_name}</p>

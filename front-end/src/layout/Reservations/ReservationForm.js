@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom';
 
 import { 
   createReservation,
@@ -9,8 +9,11 @@ import {
 } from '../../utils/api';
 import ErrorAlert from '../ErrorAlert';
 
-export default function ReservationForm({ reservation_id }) {
+export default function ReservationForm() {
   const history = useHistory();
+  const params = useParams();
+  const reservation_id = Number(params.reservation_id);
+  const newRes = Object.keys(params).length;
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -20,7 +23,6 @@ export default function ReservationForm({ reservation_id }) {
     reservation_time: "",
     people: "",
   });
-  console.log("reservation_id in ResForm", reservation_id)
   const [errors, setErrors] = useState(null);
 
   React.useEffect(() => {
@@ -76,28 +78,28 @@ export default function ReservationForm({ reservation_id }) {
   };
  
   const handleSubmit = (e) => {
-    console.log("submitting some reservation details")
-    console.log('typeof(poeple)', typeof(formData.people))
     e.preventDefault();
-    if (!reservation_id) {
-      console.log("this is a new reservation")
+    if (newRes === 0) {
+      console.log("no params - new reservation")
       if (validateReservation()) {
-        console.log('form is valid')
         const reservation = {
           ...formData,
           people: Number(formData.people),
           status: "booked",
         };
-        console.log('typeof(poeple)', typeof(formData.people))
         createReservation(reservation)
           .then((output) =>
             history.push(`/dashboard?date=${formData.reservation_date}`))
           .catch((error) => setErrors(error))
       }
     }
-    if (reservation_id ) {
-      console.log("updating existing reservation")
-      updateReservation(formData, reservation_id)
+    if (newRes !== 0) {
+      console.log("params exist - updating existing res")
+      const reservation = {
+        ...formData,
+        people: Number(formData.people),
+      };
+      updateReservation(reservation)
         .then(() => console.log("edited reservation"))
         .catch((error) => setErrors(error))
         .then(() =>

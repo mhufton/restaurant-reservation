@@ -37,19 +37,27 @@ function read(reservation_id) {
     .then((createdRecords) => createdRecords[0])
 }
 
-function update(reservation_id, updatedRes) {
+// function update(updatedRes) {
+//   return knex("reservations")
+//     .select("*")
+//     .where({ reservation_id: updatedRes.reservation_id })
+//     .update(updatedRes)
+//     .then((createdRecords) => createdRecords[0])
+// }
+
+// function updateStatus(reservation_id, status) {
+//   return knex("reservations")
+//     .where({ reservation_id: reservation_id })
+//     .update({ status: status })
+//     .then((createdRecords) => createdRecords[0])
+// }
+
+function update(updatedReservation) {
   return knex("reservations")
     .select("*")
-    .where({ reservation_id: reservation_id })
-    .update(updatedRes)
-    .then((createdRecords) => createdRecords[0])
-}
-
-function updateStatus(reservation_id, status) {
-  return knex("reservations")
-    .where({ reservation_id: reservation_id })
-    .update({ status: status })
-    .then((createdRecords) => createdRecords[0])
+    .where({ reservation_id: updatedReservation.reservation_id })
+    .update(updatedReservation, "*")
+    .then((updatedReservations) => updatedReservations[0]);
 }
 
 function destroy(reservation_id) {
@@ -63,6 +71,5 @@ module.exports = {
   create,
   read,
   update,
-  updateStatus,
   destroy,
 }
