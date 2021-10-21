@@ -1,18 +1,20 @@
-function onlyValidProperties(VALID_PROPS) {
+function hasOnlyValidProperties(...properties) {
   return function (req, res, next) {
     const { data = {} } = req.body;
+ 
     const invalidFields = Object.keys(data).filter(
-      (field) => !VALID_PROPS.includes(field)
+      (field) => !properties.includes(field)
     );
-
+  
     if (invalidFields.length) {
-      return next ({
+      return next({
         status: 400,
-        message: `Invalid field(s): ${invalidFields.join(", ")}`
-      })
+        message: `Invalid field(s): ${invalidFields.join(", ")}`,
+      });
     }
     next();
-  };
+  }
 }
 
-module.exports = onlyValidProperties;
+
+module.exports = hasOnlyValidProperties;
