@@ -18,6 +18,9 @@ function Dashboard({ setReservation_id }) {
   const [tables, setTables] = useState([]);
   const [error, setError] = useState(null);
   const [viewDate, setViewDate] = useState(date);
+  console.log("error on dashboard:", error)
+  console.log('reservations.length', reservations.length)
+  console.log('reservations', reservations)
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -25,17 +28,19 @@ function Dashboard({ setReservation_id }) {
     async function loadReservations() {
       try {
         if (viewDate === date) {
+          console.log(`getting res for ${viewDate}`)
           const reservationDate = await listReservations({ date }, abortController.signal);
           setReservations(reservationDate);
           setError(null)
         } else {
+          console.log(`getting res for ${viewDate}`)
           const reservationDate = await listReservations({ viewDate }, abortController.signal);
           setError(null);
           setReservations(reservationDate)
         }
       } catch (error) {
         setReservations([]);
-        setError(error.message);
+        setError(error);
       }
     }
     loadReservations();
@@ -87,12 +92,12 @@ function Dashboard({ setReservation_id }) {
         <button onClick={handleNext}>Next</button>
       </div>
       <div>
-        {error ? <ErrorAlert error={error} /> : null}
+        
         <div>
           <h4>Reservations</h4>
           {reservations.length > 0
             ? <ReservationsList reservations={reservations} setReservation_id={setReservation_id} />
-            : <p>There are either no reservations for this date or all reservations are finished</p>
+            : <ErrorAlert error={`There are no reservations for ${viewDate}`} />
           }
         </div>
         <div>
