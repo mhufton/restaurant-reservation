@@ -18,10 +18,7 @@ function Dashboard({ setReservation_id }) {
   const [tables, setTables] = useState([]);
   const [error, setError] = useState(null);
   const [viewDate, setViewDate] = useState(date);
-  console.log("error on dashboard:", error)
-  console.log('reservations.length', reservations.length)
-  console.log('reservations', reservations)
-
+  
   useEffect(() => {
     const abortController = new AbortController();
   
@@ -97,7 +94,7 @@ function Dashboard({ setReservation_id }) {
           <h4>Reservations</h4>
           {reservations.length > 0
             ? <ReservationsList reservations={reservations} setReservation_id={setReservation_id} />
-            : <ErrorAlert error={`There are no reservations for ${viewDate}`} />
+            : <ErrorAlert error={error} />
           }
         </div>
         <div>
